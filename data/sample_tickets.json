@@ -1,0 +1,32 @@
+[
+  {
+    "external_id": "T-001",
+    "customer_id": "CUST-1001",
+    "subject": "Charged twice for my subscription",
+    "body": "Hi, I was charged twice for my Pro subscription this month. I only signed up once. Please help - customer_id: CUST-1001."
+  },
+  {
+    "external_id": "T-002",
+    "customer_id": "CUST-2050",
+    "subject": "Can't log in to my account",
+    "body": "I forgot my password and the login page won't let me in. How do I reset my password?"
+  },
+  {
+    "external_id": "T-003",
+    "customer_id": "CUST-3099",
+    "subject": "Dashboard won't load",
+    "body": "The dashboard has been showing an error and won't load for the last 20 minutes. Is there an outage?"
+  },
+  {
+    "external_id": "T-004",
+    "customer_id": "CUST-4001",
+    "subject": "What are your business hours?",
+    "body": "Just a quick question - what are your customer support business hours?"
+  },
+  {
+    "external_id": "T-005",
+    "customer_id": "CUST-1002",
+    "subject": "How do I cancel my plan?",
+    "body": "I'd like to cancel my annual plan. What happens to the remaining time and will I get a refund? customer_id: CUST-1002."
+  }
+]

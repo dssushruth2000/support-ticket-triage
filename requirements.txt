@@ -1,0 +1,29 @@
+# --- Web / API ---
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# --- Data / validation / config ---
+pydantic==2.13.4
+pydantic-settings==2.6.1
+python-dotenv==1.0.1
+
+# --- Database (SQLite now, Postgres/Supabase later) ---
+SQLAlchemy==2.0.36
+# psycopg[binary] is only needed when you switch DATABASE_URL to Postgres/Supabase.
+# Uncomment then:
+# psycopg[binary]==3.2.3
+
+# --- LLM provider (Gemini free tier) ---
+# Optional at runtime: the app defaults to the built-in mock provider and runs
+# fine without this installed or without an API key. 2.x is required for
+# Gemini 3.x models (thought-signature handling in tool calling).
+google-genai==2.12.1
+
+# --- Testing ---
+pytest==8.3.4
+httpx==0.28.1
+
+# --- Eval suite (Phase 3) ---
+# Used only by ``python -m evals.prepare_dataset`` to pull the Bitext labeled
+# support-ticket dataset from HuggingFace. Not required for running the agent.
+datasets>=3.0.0

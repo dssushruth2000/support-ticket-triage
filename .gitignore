@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+
+# Local database files
+*.db
+*.sqlite3
+
+# Eval run artifacts (regenerable)
+evals/results/
+
+# Dashboard
+dashboard/node_modules/
+dashboard/dist/
+
+# Local agent handoff notes (not for the public repo)
+PROJECT_STATUS.md
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
