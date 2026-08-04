@@ -7,11 +7,10 @@ pydantic==2.13.4
 pydantic-settings==2.6.1
 python-dotenv==1.0.1
 
-# --- Database (SQLite now, Postgres/Supabase later) ---
+# --- Database (SQLite for tickets; Postgres/Supabase for RAG) ---
 SQLAlchemy==2.0.36
-# psycopg[binary] is only needed when you switch DATABASE_URL to Postgres/Supabase.
-# Uncomment then:
-# psycopg[binary]==3.2.3
+# Required for Phase 3b RAG (RAG_DATABASE_URL → Supabase pgvector).
+psycopg[binary]==3.2.3
 
 # --- LLM provider (Gemini free tier) ---
 # Optional at runtime: the app defaults to the built-in mock provider and runs

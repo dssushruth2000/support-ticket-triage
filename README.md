@@ -5,11 +5,11 @@ information it needs, pulls that information itself using tools, and drafts or
 escalates a response — with guardrails, cost tracking, and an eval suite.
 
 This repo is being built in phases (see [`support-ticket-triage-agent-spec.md`](support-ticket-triage-agent-spec.md)).
-**Phases 1–4 (core agent, guardrails, eval suite, cost routing + dashboard) are implemented.**
+**Phases 1–4 plus Phase 3b RAG (core agent, guardrails, eval suite, cost routing + dashboard, pgvector knowledge retrieval) are implemented.**
 
 ---
 
-## What works today (Phases 1–4)
+## What works today (Phases 1–4 + 3b RAG)
 
 - A **plain-Python agent loop** (no framework) where the LLM decides which tools
   to call, the loop runs them, feeds results back, and repeats until a final
@@ -29,12 +29,13 @@ This repo is being built in phases (see [`support-ticket-triage-agent-spec.md`](
   by a heuristic router; tier + model name stored on each resolution.
 - **Observability dashboard (Phase 4):** React UI for avg cost, escalation rate,
   routing mix, and recent tickets (`/dashboard/` or `dashboard` Vite app).
+- **RAG knowledge retrieval (Phase 3b):** `search_knowledge_base` embeds the query
+  with Gemini and retrieves top chunks from **Supabase pgvector**. When RAG is
+  off or unavailable, it falls back to in-memory keyword search (offline-safe).
 - **FastAPI** endpoints to submit tickets and read back the full decision trace.
-- **SQLAlchemy** persistence (SQLite now; one-line switch to Postgres/Supabase later)
-  storing tickets, resolutions, and a per-step **decision log** (tools, tokens, cost, latency).
-- **Tests** covering tools, the reasoning loop, API, guardrails, routing, metrics, and eval scoring.
-
-> Real RAG (pgvector) and the optional multi-agent split are Phase 3b / Phase 5.
+- **SQLAlchemy** persistence (SQLite for tickets/logs by default; optional
+  Postgres for tickets later) plus a separate `RAG_DATABASE_URL` for vectors.
+- **Tests** covering tools, the reasoning loop, API, guardrails, routing, metrics, eval scoring, and RAG fallback.
 
 ---
 
@@ -151,21 +152,36 @@ Metrics endpoints: `GET /metrics/summary`, `GET /metrics/recent`.
 > Prefer `gemini-flash-lite-latest` for evals / cheap tier. Some older flash models return 404 /
 > zero free-tier quota on newly issued keys.
 
-## Switching to Postgres / Supabase (later)
+## Phase 3b — RAG (Supabase + pgvector)
 
-No code changes — just set `DATABASE_URL` in `.env` to your Supabase pooled
-connection string and install the driver:
+Tickets and decision logs stay on local SQLite (`DATABASE_URL`). Knowledge-base
+retrieval uses a **separate** Supabase Postgres URL with pgvector.
 
-```bash
-pip install "psycopg[binary]"
-```
-```env
-DATABASE_URL=postgresql+psycopg://postgres.<ref>:<password>@<host>:6543/postgres
-```
-Enable pgvector once in the Supabase SQL editor for Phase 3 RAG:
-```sql
-create extension if not exists vector;
-```
+### Setup
+
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In the SQL editor, run:
+   ```sql
+   create extension if not exists vector;
+   ```
+3. Project Settings → Database → copy the **Transaction pooler** URI (port `6543`).
+4. Put it in `.env` (SQLAlchemy form — note the `postgresql+psycopg://` prefix):
+   ```env
+   ENABLE_RAG=true
+   RAG_DATABASE_URL=postgresql+psycopg://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres
+   EMBEDDING_MODEL=gemini-embedding-001
+   ```
+5. Install deps (includes `psycopg`) and ingest seed docs:
+   ```powershell
+   pip install -r requirements.txt
+   python -m app.rag.ingest
+   ```
+
+After ingest, `search_knowledge_base` returns `"source": "rag"` with similarity
+scores. With `ENABLE_RAG=false` (default), it uses keyword matching instead.
+
+> Optional later: move tickets/logs to Postgres by setting `DATABASE_URL` to a
+> Supabase URL. That is independent of RAG.
 
 ---
 
@@ -179,8 +195,14 @@ app/
     prompts.py   # system prompt + ticket formatting
     guardrails.py # Phase 2 action routing (escalate / draft / auto-respond)
     router.py    # Phase 4 cheap vs strong model routing
+  rag/
+    embeddings.py # Gemini embeddings
+    store.py      # pgvector upsert + similarity search
+    retrieve.py   # rag_enabled / rag_search
+    ingest.py     # seed docs into Supabase (`python -m app.rag.ingest`)
+    seed_docs.py  # policy/FAQ corpus
   tools/
-    tools.py     # tool implementations (in-memory fixtures for now)
+    tools.py     # tool implementations (RAG or keyword KB search)
     registry.py  # tool specs + safe dispatch
   db/
     database.py  # engine/session
@@ -215,5 +237,4 @@ system + ticket ─▶ LLM ─▶ tool calls? ──yes──▶ run tools ─�
 ```
 
 Every LLM turn and tool call is recorded in `decision_logs`, which is the
-foundation for the eval suite and observability dashboard in later phases.
-```
+foundation for the eval suite and observability dashboard.

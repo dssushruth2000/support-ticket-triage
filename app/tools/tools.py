@@ -1,15 +1,19 @@
 """Implementations of the agent's tools.
 
-For Phase 1 these run against small in-memory fixtures so the whole system is
-runnable offline. The knowledge-base search here is a simple keyword matcher;
-Phase 3 swaps its internals for real RAG over pgvector without changing the
-tool's signature or the agent that calls it.
+Account/status tools use in-memory fixtures. Knowledge-base search uses real
+RAG (Gemini embeddings + Supabase pgvector) when ENABLE_RAG is on; otherwise
+falls back to in-memory keyword matching so offline demos and tests work.
 """
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
+
+from app.rag.seed_docs import SEED_DOCUMENTS
+
+logger = logging.getLogger(__name__)
 
 # --- Fake account/order data ------------------------------------------------
 
@@ -41,40 +45,8 @@ _ACCOUNTS: dict[str, list[dict[str, Any]]] = {
     ],
 }
 
-# --- Fake knowledge base ----------------------------------------------------
-
-_KNOWLEDGE_BASE: list[dict[str, str]] = [
-    {
-        "title": "Duplicate charge refund policy",
-        "content": (
-            "If a customer is charged more than once for the same subscription "
-            "within 24 hours, the duplicate charge is eligible for an automatic "
-            "refund. Refunds post within 5-7 business days."
-        ),
-    },
-    {
-        "title": "How to reset your password",
-        "content": (
-            "Users can reset their password via the 'Forgot password' link on the "
-            "sign-in page. A reset link is emailed and expires after 60 minutes."
-        ),
-    },
-    {
-        "title": "Service outage troubleshooting",
-        "content": (
-            "If the app fails to load, first check the status page. Transient "
-            "errors usually resolve within minutes; persistent issues should be "
-            "escalated to the on-call engineer."
-        ),
-    },
-    {
-        "title": "Cancellation policy",
-        "content": (
-            "Subscriptions can be cancelled anytime. Cancellations take effect at "
-            "the end of the current billing period; no partial-period refunds."
-        ),
-    },
-]
+# Offline / fallback corpus (same seed used by ``python -m app.rag.ingest``).
+_KNOWLEDGE_BASE: list[dict[str, str]] = list(SEED_DOCUMENTS)
 
 
 def get_account_orders(customer_id: str) -> dict[str, Any]:
@@ -87,7 +59,7 @@ def get_account_orders(customer_id: str) -> dict[str, Any]:
     }
 
 
-def search_knowledge_base(query: str) -> dict[str, Any]:
+def _keyword_search(query: str) -> dict[str, Any]:
     terms = {t for t in query.lower().split() if len(t) > 2}
     scored: list[tuple[int, dict[str, str]]] = []
     for doc in _KNOWLEDGE_BASE:
@@ -97,7 +69,39 @@ def search_knowledge_base(query: str) -> dict[str, Any]:
             scored.append((score, doc))
     scored.sort(key=lambda x: x[0], reverse=True)
     results = [{"title": d["title"], "content": d["content"]} for _, d in scored[:3]]
-    return {"query": query, "match_count": len(results), "results": results}
+    return {
+        "query": query,
+        "match_count": len(results),
+        "results": results,
+        "source": "keyword",
+    }
+
+
+def search_knowledge_base(query: str) -> dict[str, Any]:
+    """Search policy/FAQ docs — RAG when configured, else keyword fallback."""
+    try:
+        from app.rag.retrieve import rag_enabled, rag_search
+
+        if rag_enabled():
+            hits = rag_search(query, limit=3)
+            results = [
+                {
+                    "title": h["title"],
+                    "content": h["content"],
+                    "score": h.get("score"),
+                }
+                for h in hits
+            ]
+            return {
+                "query": query,
+                "match_count": len(results),
+                "results": results,
+                "source": "rag",
+            }
+    except Exception as exc:  # noqa: BLE001 — never crash the agent loop
+        logger.warning("RAG search failed; falling back to keyword: %s", exc)
+
+    return _keyword_search(query)
 
 
 def check_system_status() -> dict[str, Any]:

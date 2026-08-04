@@ -63,12 +63,16 @@ def _startup() -> None:
 
 @app.get("/health")
 def health() -> dict[str, object]:
+    from app.rag.retrieve import rag_enabled
+
     return {
         "status": "ok",
         "llm_provider": settings.llm_provider,
         "model_routing": settings.enable_model_routing,
         "gemini_model_cheap": settings.gemini_model_cheap,
         "gemini_model_strong": settings.gemini_model_strong,
+        "rag_enabled": rag_enabled(),
+        "embedding_model": settings.embedding_model,
     }
 
 

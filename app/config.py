@@ -28,8 +28,15 @@ class Settings(BaseSettings):
     gemini_model_strong: str = "gemini-flash-latest"
 
     # Database. Defaults to a local SQLite file; swap for a Postgres/Supabase
-    # connection string with no code changes.
+    # connection string with no code changes. Tickets/logs stay here.
     database_url: str = "sqlite:///./support_triage.db"
+
+    # Phase 3b — RAG over Supabase pgvector (separate from ticket DB).
+    # When disabled or misconfigured, search_knowledge_base falls back to
+    # in-memory keyword matching so offline demos and tests still work.
+    enable_rag: bool = False
+    rag_database_url: str = ""
+    embedding_model: str = "gemini-embedding-001"
 
     # Agent loop: hard cap on reasoning/tool iterations.
     max_agent_steps: int = 6
