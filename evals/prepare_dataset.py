@@ -31,14 +31,17 @@ INTENT_TO_CATEGORY: dict[str, str] = {
     "delete_account": "account",
     "edit_account": "account",
     "switch_account": "account",
-    # money / lifecycle (always escalate)
+    # money / lifecycle (always escalate) — action-seeking intents only.
+    # Informational lookups (payment methods, refund policy) map to faq so the
+    # agent can auto-answer them; text-level guardrails still catch real money
+    # actions if the model mis-labels those tickets.
     "cancel_order": "cancellation",
     "check_cancellation_fee": "cancellation",
     "get_refund": "refund",
     "track_refund": "refund",
-    "check_refund_policy": "refund",
+    "check_refund_policy": "faq",
     "payment_issue": "billing",
-    "check_payment_methods": "billing",
+    "check_payment_methods": "faq",
     "check_invoice": "billing",
     "get_invoice": "billing",
     # low-risk FAQ-ish

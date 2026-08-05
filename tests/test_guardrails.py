@@ -68,11 +68,46 @@ def test_auto_respond_threshold_is_inclusive_at_0_9():
 # --- Rule 4: cautious default ----------------------------------------------
 
 
-def test_unknown_high_confidence_category_defaults_to_review():
-    # A non-high-risk, non-auto-respond category (e.g. technical) is drafted.
-    assert check_guardrails("technical", 0.95).action == DRAFT_FOR_REVIEW
-    assert check_guardrails("account", 0.99).action == DRAFT_FOR_REVIEW
-    assert check_guardrails("other", 1.0).action == DRAFT_FOR_REVIEW
+def test_money_action_cues_escalate_even_if_labeled_faq():
+    # Defense in depth: mis-labeled refund/cancel requests must not auto-send.
+    result = check_guardrails(
+        "faq",
+        0.99,
+        subject="Need help",
+        body="I want a refund for last month's charge.",
+    )
+    assert result.action == ESCALATE_TO_HUMAN
+
+    result = check_guardrails(
+        "faq",
+        0.99,
+        subject="Please cancel",
+        body="Please cancel my subscription immediately.",
+    )
+    assert result.action == ESCALATE_TO_HUMAN
+
+
+def test_informational_policy_faq_can_still_auto_respond():
+    # Asking about the refund *policy* (no action request) may auto-respond.
+    result = check_guardrails(
+        "faq",
+        0.95,
+        subject="Refund policy",
+        body="Show me your refund policy",
+    )
+    assert result.action == AUTO_RESPOND
+
+
+def test_payment_issue_wording_escalates_even_if_labeled_faq():
+    result = check_guardrails(
+        "faq",
+        0.9,
+        subject="Online payments",
+        body="I dont know how i can notify of issues with online payments",
+    )
+    assert result.action == ESCALATE_TO_HUMAN
+
+
 
 
 # --- End-to-end through the service ----------------------------------------

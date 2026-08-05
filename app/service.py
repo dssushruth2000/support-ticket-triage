@@ -92,7 +92,12 @@ def triage_ticket(
 
     d = result.decision
     # Phase 2 guardrails: map the agent's decision to an allowed action.
-    guardrail = check_guardrails(d.category, d.confidence)
+    guardrail = check_guardrails(
+        d.category,
+        d.confidence,
+        subject=subject,
+        body=body,
+    )
     session.add(
         Resolution(
             ticket_id=ticket.id,

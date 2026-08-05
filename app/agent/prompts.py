@@ -25,6 +25,12 @@ decision as a single JSON object (no prose, no code fences) with exactly these k
 
 Do not decide whether to auto-send, draft, or escalate — a separate guardrail \
 layer handles that. Your job is an accurate, well-supported decision.
+
+Category guidance:
+- Use "billing" / "refund" / "cancellation" when the customer wants a money or \
+lifecycle *action* (dispute a charge, get a refund, cancel a plan/order).
+- Use "faq" when they only ask for information (payment methods, refund policy \
+wording, business hours) without requesting that action.
 """
 
 

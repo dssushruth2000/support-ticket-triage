@@ -27,6 +27,7 @@ SAMPLE_FILE = Path(__file__).resolve().parent.parent / "data" / "sample_tickets.
 
 def _print_run(
     subject: str,
+    body: str,
     customer_id: str | None,
     result: AgentRunResult,
     *,
@@ -51,7 +52,9 @@ def _print_run(
         else:  # final
             print(f"  [{step.step}] FINAL [tokens={step.tokens}, ${step.cost_usd:.6f}]")
     d = result.decision
-    guardrail = check_guardrails(d.category, d.confidence)
+    guardrail = check_guardrails(
+        d.category, d.confidence, subject=subject, body=body
+    )
     print("-" * 72)
     print(f"  category   : {d.category}")
     print(f"  urgency    : {d.urgency}")
@@ -95,6 +98,7 @@ def main() -> None:
         result = run_agent(args.subject, args.body, args.customer_id, provider, registry)
         _print_run(
             args.subject,
+            args.body,
             args.customer_id,
             result,
             tier=route.tier if route else None,
@@ -109,6 +113,7 @@ def main() -> None:
         result = run_agent(t["subject"], t["body"], t.get("customer_id"), provider, registry)
         _print_run(
             t["subject"],
+            t["body"],
             t.get("customer_id"),
             result,
             tier=route.tier if route else None,

@@ -10,6 +10,8 @@ routing gates every decision behind explicit thresholds and human checkpoints:
 
 * High-risk money/account actions (billing, refund, cancellation) are *always*
   escalated to a human, regardless of how confident the model is.
+* Ticket text with money-action cues (e.g. "want a refund", "cancel my plan")
+  also escalates — defense in depth when the model mis-labels the category.
 * Low-confidence decisions are drafted for a human to review before sending.
 * Only demonstrably safe, low-risk, high-confidence categories may auto-respond.
 * Everything else falls through to the cautious default (draft for review).
@@ -20,6 +22,7 @@ auditable — you can prove "billing never auto-sends" without invoking the LLM.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 # --- Possible actions -------------------------------------------------------
@@ -42,6 +45,27 @@ AUTO_RESPOND_MIN_CONFIDENCE = 0.9
 # Below this, a human reviews the draft first.
 REVIEW_MIN_CONFIDENCE = 0.75
 
+# Phrases that imply a money / lifecycle *action* (not a policy FAQ lookup).
+# Used as a second line of defense when the model mis-classifies the ticket.
+_HIGH_RISK_ACTION_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
+    re.compile(p, re.IGNORECASE)
+    for p in (
+        r"\b(want|need|request|get|ask for|looking for)\b.{0,24}\brefund",
+        r"\brefund\b.{0,24}\b(please|now|my|me|this)\b",
+        r"\breimburse(ment)?\b.{0,16}\b(me|my|for)\b",
+        r"\bcancel(ling|ation)?\b.{0,24}\b(my|the|subscription|plan|order|account)\b",
+        r"\b(subscription|plan|order|account)\b.{0,24}\bcancel",
+        r"\bcharged?\s+(twice|two times|again|duplicate)\b",
+        r"\bdouble[- ]?(charged?|billed?)\b",
+        r"\b(overcharged|billing error|incorrect charge|wrong charge)\b",
+        r"\bpayment\s+issue\b",
+        r"\bpayment\s+(problem|error|fail)",
+        r"\bissues?\b.{0,40}\b(online\s+)?payments?\b",
+        r"\b(online\s+)?payments?\b.{0,40}\bissues?\b",
+        r"\bfailed\s+payment\b",
+    )
+)
+
 
 @dataclass(frozen=True)
 class GuardrailResult:
@@ -51,15 +75,28 @@ class GuardrailResult:
     reason: str
 
 
+def ticket_has_high_risk_action_cues(subject: str = "", body: str = "") -> bool:
+    """True when the ticket text asks for a money/lifecycle action."""
+    text = f"{subject}\n{body}".strip()
+    if not text:
+        return False
+    return any(p.search(text) for p in _HIGH_RISK_ACTION_PATTERNS)
+
+
 def check_guardrails(
-    category: str | None, confidence: float | None
+    category: str | None,
+    confidence: float | None,
+    *,
+    subject: str = "",
+    body: str = "",
 ) -> GuardrailResult:
     """Map an agent decision to the action the system is allowed to take.
 
     The rules are evaluated in priority order so the safest constraint always
     wins:
 
-    1. High-risk category      -> escalate_to_human   (even at confidence 1.0)
+    1. High-risk category OR money-action cues in ticket text
+       -> escalate_to_human   (even at confidence 1.0)
     2. Confidence < 0.75       -> draft_for_review
     3. Safe category + >= 0.9  -> auto_respond
     4. Otherwise               -> draft_for_review    (cautious default)
@@ -70,14 +107,24 @@ def check_guardrails(
     cat = (category or "").strip().lower()
     conf = confidence if confidence is not None else 0.0
 
-    # Rule 1 — irreversible / financial actions always need a human. This check
-    # comes first so no confidence value can ever bypass it.
+    # Rule 1a — irreversible / financial categories always need a human.
     if cat in HIGH_RISK_CATEGORIES:
         return GuardrailResult(
             action=ESCALATE_TO_HUMAN,
             reason=(
                 f"Category '{cat}' is high-risk (money/account lifecycle); "
                 "escalated to a human regardless of confidence."
+            ),
+        )
+
+    # Rule 1b — defense in depth: escalate when the ticket *text* asks for a
+    # money/lifecycle action even if the model labeled it faq/password_reset.
+    if ticket_has_high_risk_action_cues(subject, body):
+        return GuardrailResult(
+            action=ESCALATE_TO_HUMAN,
+            reason=(
+                "Ticket text contains money/account-lifecycle action cues; "
+                "escalated to a human regardless of predicted category."
             ),
         )
 

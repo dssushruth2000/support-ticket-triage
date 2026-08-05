@@ -136,7 +136,12 @@ def run_eval(
                 registry=registry,
             )
             d = result.decision
-            guard = check_guardrails(d.category, d.confidence)
+            guard = check_guardrails(
+                d.category,
+                d.confidence,
+                subject=ticket["subject"],
+                body=ticket["body"],
+            )
             row.update(
                 {
                     "pred_category": d.category,
