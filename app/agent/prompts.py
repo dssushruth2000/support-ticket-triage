@@ -26,11 +26,33 @@ decision as a single JSON object (no prose, no code fences) with exactly these k
 Do not decide whether to auto-send, draft, or escalate — a separate guardrail \
 layer handles that. Your job is an accurate, well-supported decision.
 
-Category guidance:
-- Use "billing" / "refund" / "cancellation" when the customer wants a money or \
-lifecycle *action* (dispute a charge, get a refund, cancel a plan/order).
-- Use "faq" when they only ask for information (payment methods, refund policy \
-wording, business hours) without requesting that action.
+Category definitions (pick the best single label):
+- billing: payment failures, incorrect charges, invoices, being charged money.
+- refund: requesting a refund OR tracking refund/reimbursement/rebate/compensation status.
+- cancellation: canceling a subscription, plan, or order (not deleting a user profile).
+- technical: outages, bugs, crashes, 500 errors, app/site not loading.
+- password_reset: forgot password, reset link, recover PIN / access key / login credentials.
+- account: create/edit/switch/delete a user profile or account settings (including \
+"terminate/remove/delete my account").
+- faq: how-to / informational questions that are not the above — shipping address \
+setup or edits, delivery timing, payment methods, policy wording, contact support, \
+changing items on an order (without canceling it).
+- other: ONLY if none of the labels above fit. Prefer faq over other for ordinary \
+how-to questions.
+
+Disambiguation rules:
+- "delete/remove/terminate my account" → account (NOT cancellation).
+- "cancel my subscription/plan/order" → cancellation.
+- shipping/delivery address questions → faq (NOT account).
+- recover PIN / access key / password → password_reset (NOT account or technical).
+- "refund/rebate/compensation status" → refund (NOT billing).
+
+Examples:
+1) "Where can I edit the shipping address?" → faq
+2) "I don't know how to delete my platinum account" → account
+3) "Can you help me retrieve my user PIN?" → password_reset
+4) "Any news on my rebate/refund status?" → refund
+5) "How soon can I expect my parcel?" → faq
 """
 
 

@@ -98,14 +98,25 @@ def test_informational_policy_faq_can_still_auto_respond():
     assert result.action == AUTO_RESPOND
 
 
-def test_payment_issue_wording_escalates_even_if_labeled_faq():
-    result = check_guardrails(
-        "faq",
-        0.9,
-        subject="Online payments",
-        body="I dont know how i can notify of issues with online payments",
+def test_rebate_and_cancellation_fee_cues_escalate():
+    assert (
+        check_guardrails(
+            "faq",
+            0.9,
+            subject="Rebates",
+            body="I do not know what to do to obtain rebates",
+        ).action
+        == ESCALATE_TO_HUMAN
     )
-    assert result.action == ESCALATE_TO_HUMAN
+    assert (
+        check_guardrails(
+            "faq",
+            0.9,
+            subject="Fees",
+            body="Is it possible to see the withdrawal fees?",
+        ).action
+        == ESCALATE_TO_HUMAN
+    )
 
 
 

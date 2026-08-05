@@ -50,11 +50,12 @@ REVIEW_MIN_CONFIDENCE = 0.75
 _HIGH_RISK_ACTION_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
     re.compile(p, re.IGNORECASE)
     for p in (
-        r"\b(want|need|request|get|ask for|looking for)\b.{0,24}\brefund",
-        r"\brefund\b.{0,24}\b(please|now|my|me|this)\b",
+        r"\b(want|need|request|get|ask for|looking for|obtain)\b.{0,24}\b(refund|rebate|rebates|compensation)\b",
+        r"\b(refund|rebate|rebates|compensation)\b.{0,24}\b(please|now|my|me|this|status)\b",
         r"\breimburse(ment)?\b.{0,16}\b(me|my|for)\b",
         r"\bcancel(ling|ation)?\b.{0,24}\b(my|the|subscription|plan|order|account)\b",
         r"\b(subscription|plan|order|account)\b.{0,24}\bcancel",
+        r"\b(cancellation|withdrawal)\s+fees?\b",
         r"\bcharged?\s+(twice|two times|again|duplicate)\b",
         r"\bdouble[- ]?(charged?|billed?)\b",
         r"\b(overcharged|billing error|incorrect charge|wrong charge)\b",

@@ -20,11 +20,14 @@ This repo is being built in phases (see [`support-ticket-triage-agent-spec.md`](
   - `mock` — deterministic, **no API key needed**, keeps everything runnable and tests reproducible.
   - `gemini` — Google Gemini (free tier) via `google-genai` (with 429/503 retry).
 - **Guardrails** (plain code, not prompts): billing/refund/cancellation always
-  escalate; low confidence drafts for review; only high-confidence FAQ /
-  password_reset may auto-respond.
+  escalate; ticket-text money/lifecycle cues escalate even if the model
+  mis-labels the category; low confidence drafts for review; only
+  high-confidence FAQ / password_reset may auto-respond.
 - **Eval suite**: 250 labeled tickets (`data/eval_tickets.jsonl`), scoring script
   (accuracy, per-category precision/recall, escalation safety rates), cached
-  Gemini/mock runs under `evals/`.
+  Gemini/mock runs under `evals/`. Latest Gemini Flash Lite full run:
+  **95.2% category accuracy**, **90.4% action accuracy**, **0% high-risk
+  auto-respond**.
 - **Cost-aware model routing (Phase 4):** cheap vs strong Gemini models chosen
   by a heuristic router; tier + model name stored on each resolution.
 - **Observability dashboard (Phase 4):** React UI for avg cost, escalation rate,
