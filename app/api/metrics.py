@@ -1,4 +1,4 @@
-"""Observability metrics derived from persisted triage runs (Phase 4)."""
+"""Observability metrics derived from persisted triage runs."""
 
 from __future__ import annotations
 

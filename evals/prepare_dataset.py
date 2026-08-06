@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_PATH = ROOT / "data" / "eval_tickets.jsonl"
 
 # Bitext intent/category -> our schema. refund/cancellation are first-class so
-# the Phase 2 guardrails can be scored for missed/false escalations.
+# the guardrails can be scored for missed/false escalations.
 INTENT_TO_CATEGORY: dict[str, str] = {
     # password / account
     "recover_password": "password_reset",
@@ -365,7 +365,7 @@ def build_eval_set(n: int, seed: int) -> list[dict]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Prepare the Phase 3 eval ticket set.")
+    parser = argparse.ArgumentParser(description="Prepare the eval ticket set.")
     parser.add_argument("--n", type=int, default=250, help="Number of tickets (default 250).")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--out", type=Path, default=OUT_PATH)

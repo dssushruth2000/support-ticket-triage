@@ -22,7 +22,7 @@ def _select_provider(
     body: str,
     provider: LLMProvider | None,
 ) -> tuple[LLMProvider, RouteDecision | None, str | None]:
-    """Apply Phase 4 routing unless a provider was explicitly injected (tests)."""
+    """Apply model routing unless a provider was explicitly injected (tests)."""
     if provider is not None:
         return provider, None, getattr(provider, "_model", provider.name)
 
@@ -91,7 +91,7 @@ def triage_ticket(
         )
 
     d = result.decision
-    # Phase 2 guardrails: map the agent's decision to an allowed action.
+    # Map the agent's decision to an allowed action (code guardrails).
     guardrail = check_guardrails(
         d.category,
         d.confidence,

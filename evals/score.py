@@ -1,4 +1,4 @@
-"""Scoring helpers for the Phase 3 eval suite.
+"""Scoring helpers for the eval suite.
 
 Metrics (what interviewers ask about):
 * category accuracy

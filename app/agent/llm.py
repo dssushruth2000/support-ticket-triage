@@ -397,7 +397,7 @@ class GeminiProvider(LLMProvider):
 def get_provider(model: str | None = None) -> LLMProvider:
     """Return the configured provider.
 
-    ``model`` overrides the default Gemini model (used by Phase 4 routing).
+    ``model`` overrides the default Gemini model (used by cost routing).
     Ignored for the mock provider.
     """
     provider = settings.llm_provider.lower().strip()

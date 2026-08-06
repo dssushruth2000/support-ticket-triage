@@ -20,9 +20,11 @@ evals/results/
 # Dashboard
 dashboard/node_modules/
 dashboard/dist/
+*.tsbuildinfo
 
-# Local agent handoff notes (not for the public repo)
+# Local / planning docs (not for the public repo)
 PROJECT_STATUS.md
+support-ticket-triage-agent-spec.md
 
 # OS / editor
 .DS_Store

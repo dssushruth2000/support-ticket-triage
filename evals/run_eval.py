@@ -191,7 +191,7 @@ def run_eval(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run Phase 3 eval suite.")
+    parser = argparse.ArgumentParser(description="Run eval suite.")
     parser.add_argument("--tickets", type=Path, default=DEFAULT_TICKETS)
     parser.add_argument("--cache", type=Path, default=DEFAULT_CACHE)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)

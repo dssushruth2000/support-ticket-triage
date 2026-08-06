@@ -4,12 +4,12 @@ An autonomous AI agent that reads incoming support tickets, decides what
 information it needs, pulls that information itself using tools, and drafts or
 escalates a response — with guardrails, cost tracking, and an eval suite.
 
-This repo is being built in phases (see [`support-ticket-triage-agent-spec.md`](support-ticket-triage-agent-spec.md)).
-**Phases 1–4 plus Phase 3b RAG and AgentMail email intake are implemented.**
+**Implemented:** core agent + tools, guardrails, eval suite, cost-aware routing,
+observability dashboard, RAG (Supabase pgvector), and AgentMail email intake.
 
 ---
 
-## What works today (Phases 1–4 + 3b RAG + AgentMail)
+## What works today
 
 - A **plain-Python agent loop** (no framework) where the LLM decides which tools
   to call, the loop runs them, feeds results back, and repeats until a final
@@ -28,11 +28,11 @@ This repo is being built in phases (see [`support-ticket-triage-agent-spec.md`](
   Gemini/mock runs under `evals/`. Latest Gemini Flash Lite full run:
   **95.2% category accuracy**, **90.4% action accuracy**, **0% high-risk
   auto-respond**.
-- **Cost-aware model routing (Phase 4):** cheap vs strong Gemini models chosen
+- **Cost-aware model routing:** cheap vs strong Gemini models chosen
   by a heuristic router; tier + model name stored on each resolution.
-- **Observability dashboard (Phase 4):** React UI for avg cost, escalation rate,
+- **Observability dashboard:** React UI for avg cost, escalation rate,
   routing mix, and recent tickets (`/dashboard/` or `dashboard` Vite app).
-- **RAG knowledge retrieval (Phase 3b):** `search_knowledge_base` embeds the query
+- **RAG knowledge retrieval:** `search_knowledge_base` embeds the query
   with Gemini and retrieves top chunks from **Supabase pgvector**. When RAG is
   off or unavailable, it falls back to in-memory keyword search (offline-safe).
 - **FastAPI** endpoints to submit tickets and read back the full decision trace.
@@ -99,7 +99,7 @@ curl -X POST http://127.0.0.1:8000/tickets \
 pytest -q
 ```
 
-### Run the eval suite (Phase 3)
+### Run the eval suite
 
 ```bash
 # Build/refresh the labeled set (needs `datasets`; one-time / regenerable)
@@ -115,7 +115,7 @@ python -m evals.run_eval --provider gemini --limit 20
 Reports land in `evals/results/`. Prefer `GEMINI_MODEL=gemini-flash-lite-latest`
 for bulk evals — thinking models are much slower per ticket.
 
-### Observability dashboard (Phase 4)
+### Observability dashboard
 
 ```bash
 # terminal 1 — API
@@ -193,7 +193,7 @@ Webhook endpoint: `POST /webhooks/agentmail`.
 > Prefer `gemini-flash-lite-latest` for evals / cheap tier. Some older flash models return 404 /
 > zero free-tier quota on newly issued keys.
 
-## Phase 3b — RAG (Supabase + pgvector)
+## RAG (Supabase + pgvector)
 
 Tickets and decision logs stay on local SQLite (`DATABASE_URL`). Knowledge-base
 retrieval uses a **separate** Supabase Postgres URL with pgvector.
@@ -234,8 +234,8 @@ app/
     llm.py       # provider abstraction: MockProvider, GeminiProvider
     loop.py      # the agent reasoning loop + decision parsing
     prompts.py   # system prompt + ticket formatting
-    guardrails.py # Phase 2 action routing (escalate / draft / auto-respond)
-    router.py    # Phase 4 cheap vs strong model routing
+    guardrails.py # action routing (escalate / draft / auto-respond)
+    router.py    # cheap vs strong model routing
   rag/
     embeddings.py # Gemini embeddings
     store.py      # pgvector upsert + similarity search
@@ -260,8 +260,8 @@ app/
   service.py     # runs the agent and persists results
   config.py      # env-driven settings
   cli.py         # command-line demo runner
-evals/           # Phase 3: prepare_dataset, run_eval, score
-dashboard/       # Phase 4 React observability UI
+evals/           # prepare_dataset, run_eval, score
+dashboard/       # React observability UI
 data/
   sample_tickets.json
   eval_tickets.jsonl

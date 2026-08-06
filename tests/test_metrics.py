@@ -1,4 +1,4 @@
-"""Tests for Phase 4 metrics / observability endpoints."""
+"""Tests for metrics / observability endpoints."""
 
 from __future__ import annotations
 

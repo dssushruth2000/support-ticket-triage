@@ -30,7 +30,8 @@ def init_db() -> None:
     """Create all tables. Safe to call repeatedly.
 
     Also applies lightweight additive SQLite column migrations so existing local
-    DBs pick up Phase 4 fields without a manual wipe.
+    DBs pick up routing fields (model_tier / model_name / route_reason) without
+    a manual wipe.
     """
     from sqlalchemy import text
 

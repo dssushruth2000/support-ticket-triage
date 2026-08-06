@@ -1,4 +1,4 @@
-"""Tests for the Phase 2 guardrail layer.
+"""Tests for the guardrail layer.
 
 These are pure-function tests (no LLM, no DB) proving the safety rules hold,
 plus one end-to-end test through the service layer proving a billing ticket's

@@ -2,7 +2,7 @@
 
 The ``DecisionLog`` table is what makes the agent observable — every LLM turn
 and every tool call is recorded with inputs/outputs, latency and cost, which
-is the backbone for the eval suite and dashboard in later phases.
+is the backbone for the eval suite and observability dashboard.
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ class Resolution(Base):
     cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
     latency_ms: Mapped[int] = mapped_column(Integer, default=0)
 
-    # Phase 4 — which model tier handled this ticket.
+    # Which model tier handled this ticket (routing).
     model_tier: Mapped[str | None] = mapped_column(String(16), nullable=True)
     model_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
     route_reason: Mapped[str | None] = mapped_column(Text, nullable=True)

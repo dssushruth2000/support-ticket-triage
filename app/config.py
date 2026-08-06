@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # Default / fallback model when routing is off.
     gemini_model: str = "gemini-flash-lite-latest"
 
-    # Phase 4 — cheap vs strong routing (Gemini only; mock still records the tier).
+    # Cheap vs strong routing (Gemini only; mock still records the tier).
     enable_model_routing: bool = True
     gemini_model_cheap: str = "gemini-flash-lite-latest"
     gemini_model_strong: str = "gemini-flash-latest"
@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # connection string with no code changes. Tickets/logs stay here.
     database_url: str = "sqlite:///./support_triage.db"
 
-    # Phase 3b — RAG over Supabase pgvector (separate from ticket DB).
+    # RAG over Supabase pgvector (separate from ticket DB).
     # When disabled or misconfigured, search_knowledge_base falls back to
     # in-memory keyword matching so offline demos and tests still work.
     enable_rag: bool = False

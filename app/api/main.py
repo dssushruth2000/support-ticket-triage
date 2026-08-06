@@ -4,8 +4,8 @@ Endpoints:
   GET  /health                 -> liveness + which LLM provider is active
   POST /tickets                -> submit a ticket; runs the agent and returns the result
   GET  /tickets/{id}           -> fetch a ticket with its resolution and full decision log
-  GET  /metrics/summary        -> rolled-up cost / escalation / routing stats (Phase 4)
-  GET  /metrics/recent         -> latest tickets with cost + model tier (Phase 4)
+  GET  /metrics/summary        -> rolled-up cost / escalation / routing stats
+  GET  /metrics/recent         -> latest tickets with cost + model tier
   POST /webhooks/agentmail     -> AgentMail inbound email → triage (+ safe auto-reply)
 """
 

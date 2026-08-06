@@ -1,4 +1,4 @@
-"""Tests for Phase 4 model routing."""
+"""Tests for model routing."""
 
 from __future__ import annotations
 

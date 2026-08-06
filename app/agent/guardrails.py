@@ -1,4 +1,4 @@
-"""Phase 2 — the guardrail layer.
+"""The guardrail layer.
 
 Hard rules in plain Python (deliberately *not* prompts) that map the agent's
 decision to what the system is actually allowed to *do* with it. The agent

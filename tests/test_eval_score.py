@@ -1,4 +1,4 @@
-"""Unit tests for the Phase 3 scoring helpers (no LLM, no network)."""
+"""Unit tests for the scoring helpers (no LLM, no network)."""
 
 from __future__ import annotations
 

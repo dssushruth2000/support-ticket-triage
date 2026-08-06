@@ -1,4 +1,4 @@
-"""Phase 4 — cheap vs. strong model routing.
+"""Cheap vs. strong model routing.
 
 A lightweight heuristic glances at the ticket *before* the agent loop and picks
 a model tier. Easy, low-risk tickets (FAQ / password reset) go to the cheap

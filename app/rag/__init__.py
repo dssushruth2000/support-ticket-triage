@@ -1,4 +1,4 @@
-"""Phase 3b RAG: Gemini embeddings + Supabase pgvector retrieval."""
+"""RAG: Gemini embeddings + Supabase pgvector retrieval."""
 
 from __future__ import annotations
 
