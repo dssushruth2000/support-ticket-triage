@@ -41,5 +41,13 @@ class Settings(BaseSettings):
     # Agent loop: hard cap on reasoning/tool iterations.
     max_agent_steps: int = 6
 
+    # AgentMail — email front door (receive → triage → optional auto-reply).
+    agentmail_api_key: str = ""
+    agentmail_inbox_username: str = "support-triage"
+    agentmail_inbox_id: str = ""
+    agentmail_webhook_secret: str = ""
+    # When true, send a reply only if guardrails chose auto_respond.
+    agentmail_auto_reply: bool = True
+
 
 settings = Settings()

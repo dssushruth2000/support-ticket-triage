@@ -5,11 +5,11 @@ information it needs, pulls that information itself using tools, and drafts or
 escalates a response — with guardrails, cost tracking, and an eval suite.
 
 This repo is being built in phases (see [`support-ticket-triage-agent-spec.md`](support-ticket-triage-agent-spec.md)).
-**Phases 1–4 plus Phase 3b RAG (core agent, guardrails, eval suite, cost routing + dashboard, pgvector knowledge retrieval) are implemented.**
+**Phases 1–4 plus Phase 3b RAG and AgentMail email intake are implemented.**
 
 ---
 
-## What works today (Phases 1–4 + 3b RAG)
+## What works today (Phases 1–4 + 3b RAG + AgentMail)
 
 - A **plain-Python agent loop** (no framework) where the LLM decides which tools
   to call, the loop runs them, feeds results back, and repeats until a final
@@ -36,9 +36,12 @@ This repo is being built in phases (see [`support-ticket-triage-agent-spec.md`](
   with Gemini and retrieves top chunks from **Supabase pgvector**. When RAG is
   off or unavailable, it falls back to in-memory keyword search (offline-safe).
 - **FastAPI** endpoints to submit tickets and read back the full decision trace.
+- **AgentMail email intake:** inbound mail hits `POST /webhooks/agentmail`, runs
+  the same triage path, and **auto-replies only** when guardrails choose
+  `auto_respond` (billing/refund/cancel escalate — no auto-send).
 - **SQLAlchemy** persistence (SQLite for tickets/logs by default; optional
   Postgres for tickets later) plus a separate `RAG_DATABASE_URL` for vectors.
-- **Tests** covering tools, the reasoning loop, API, guardrails, routing, metrics, eval scoring, and RAG fallback.
+- **Tests** covering tools, the reasoning loop, API, guardrails, routing, metrics, eval scoring, RAG fallback, and AgentMail webhook parsing.
 
 ---
 
@@ -135,6 +138,41 @@ uvicorn app.api.main:app --reload
 ```
 
 Metrics endpoints: `GET /metrics/summary`, `GET /metrics/recent`.
+
+### AgentMail email intake (optional)
+
+Receive real emails into the agent (free AgentMail tier includes send + receive).
+
+**One-time setup**
+
+1. Get an API key at [agentmail.to](https://www.agentmail.to) and set in `.env`:
+   ```env
+   AGENTMAIL_API_KEY=am_...
+   AGENTMAIL_INBOX_USERNAME=support-triage
+   AGENTMAIL_AUTO_REPLY=true
+   ```
+2. Claim / note your **free static ngrok domain** in the
+   [ngrok Domains dashboard](https://dashboard.ngrok.com/domains)
+   (e.g. `your-name.ngrok-free.dev`).
+3. Start the API, then start ngrok on that **same** domain every time:
+   ```powershell
+   uvicorn app.api.main:app --reload
+   # other terminal — use YOUR static domain:
+   ngrok http --url=https://your-name.ngrok-free.dev 8000
+   ```
+4. Register the webhook **once** (only when first setting up, or if the URL/secret changes):
+   ```powershell
+   python -m app.email.setup --webhook-url https://your-name.ngrok-free.dev/webhooks/agentmail
+   ```
+5. Paste printed `AGENTMAIL_INBOX_ID` and `AGENTMAIL_WEBHOOK_SECRET` into `.env`.
+
+After that, daily restarts only need **API + ngrok** — you do **not** need to
+re-register AgentMail as long as you keep using the same static domain.
+
+**Demo:** email `support-triage@agentmail.to` — FAQ may auto-reply; billing/refund/cancel escalate.
+
+Webhook endpoint: `POST /webhooks/agentmail`.
+
 ---
 
 ## Using Gemini (optional)
@@ -214,6 +252,11 @@ app/
     main.py      # FastAPI endpoints + dashboard mount
     metrics.py   # rolled-up observability metrics
     schemas.py   # request/response models
+  email/
+    parse.py     # AgentMail webhook payload → IncomingEmail
+    handler.py   # triage + safe auto-reply
+    client.py    # AgentMail SDK helpers
+    setup.py     # create inbox + register webhook (`python -m app.email.setup`)
   service.py     # runs the agent and persists results
   config.py      # env-driven settings
   cli.py         # command-line demo runner

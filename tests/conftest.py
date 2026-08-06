@@ -14,6 +14,10 @@ from pathlib import Path
 _TMP_DB = Path(tempfile.gettempdir()) / "support_triage_test.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{_TMP_DB.as_posix()}"
 os.environ["LLM_PROVIDER"] = "mock"
+os.environ["AGENTMAIL_API_KEY"] = ""
+os.environ["AGENTMAIL_WEBHOOK_SECRET"] = ""
+os.environ["AGENTMAIL_INBOX_ID"] = ""
+os.environ["AGENTMAIL_AUTO_REPLY"] = "true"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

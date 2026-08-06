@@ -18,6 +18,10 @@ psycopg[binary]==3.2.3
 # Gemini 3.x models (thought-signature handling in tool calling).
 google-genai==2.12.1
 
+# --- AgentMail (email intake / optional auto-reply) ---
+agentmail>=0.5.0
+svix>=1.40.0
+
 # --- Testing ---
 pytest==8.3.4
 httpx==0.28.1
