@@ -117,6 +117,10 @@ for bulk evals — thinking models are much slower per ticket.
 
 ### Observability dashboard
 
+![Observability dashboard](docs/dashboard.png)
+
+Cost, escalation rate, cheap vs strong routing mix, and recent ticket outcomes.
+
 ```bash
 # terminal 1 — API
 uvicorn app.api.main:app --reload
@@ -262,6 +266,7 @@ app/
   cli.py         # command-line demo runner
 evals/           # prepare_dataset, run_eval, score
 dashboard/       # React observability UI
+docs/            # screenshots for README
 data/
   sample_tickets.json
   eval_tickets.jsonl
