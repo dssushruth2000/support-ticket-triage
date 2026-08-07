@@ -1,11 +1,8 @@
 # Support-Ticket Triage Agent
 
-**Most support queues are the same three questions on repeat — plus a few that
-can cost real money if you get them wrong.**
+**Most support queues are the same three questions on repeat - plus a few that can cost real money if you get them wrong.**
 
-This agent takes those tickets (email or API), looks up what it needs, drafts a
-reply, then applies hard rules: FAQs can go out automatically; billing, refunds,
-and cancellations always go to a human.
+This agent takes those tickets (email or API), looks up what it needs, drafts a reply, then applies hard rules: FAQs can go out automatically; billing, refunds, and cancellations always go to a human.
 
 | Gemini eval | Result |
 |---|---|
@@ -64,14 +61,13 @@ Single ticket:
 python -m app.cli --subject "Charged twice" --body "billed twice, customer_id: CUST-1001" --customer-id CUST-1001
 ```
 
-Dashboard (API running): build once with `cd dashboard && npm run build`, then open
-http://127.0.0.1:8000/dashboard/ — or `npm run dev` in `dashboard/` for hot reload.
+Dashboard (API running): build once with `cd dashboard && npm run build`, then open http://127.0.0.1:8000/dashboard/ — or `npm run dev` in `dashboard/` for hot reload.
 
 ---
 
 ## How it works
 
-One pipeline from intake to a **safe** action — the model proposes; code decides.
+One pipeline from intake to a **safe** action — the model proposes and code decides.
 
 ```mermaid
 flowchart LR
@@ -106,8 +102,7 @@ flowchart LR
   H -->|billing / refund / cancel| K
 ```
 
-Tools decide what to fetch; guardrails decide what can auto-send. Every step is
-logged for the eval suite and dashboard.
+Tools decide what to fetch and guardrails decide what can auto-send. Every step is logged for the eval suite and dashboard.
 
 ---
 
